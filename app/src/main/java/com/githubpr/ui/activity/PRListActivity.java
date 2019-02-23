@@ -24,6 +24,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -52,6 +59,7 @@ public class PRListActivity extends BaseActivity {
     private boolean syncCallFinish = false;
     private boolean completeItemLoaded = false;
     private int currentPage = 1;
+    private Disposable disposable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,16 +124,41 @@ public class PRListActivity extends BaseActivity {
             return;
 
         syncCallFinish = true;
-        callHandler.getAllOpenPullRequest(githubOwnerName, githubRepoName, page, Constants.GITHUB_PER_PAGE_COUNT, new RequestListener() {
+
+        if (disposable != null)
+            disposable.dispose();
+
+        disposable = Observable.create(new ObservableOnSubscribe<Response<List<DataModel>>>() {
             @Override
-            public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
+            public void subscribe(final ObservableEmitter<Response<List<DataModel>>> emitter) {
+                callHandler.getAllOpenPullRequest(githubOwnerName, githubRepoName, page, Constants.GITHUB_PER_PAGE_COUNT, new RequestListener() {
+                    @Override
+                    public void onResponse(Call<List<DataModel>> call, Response<List<DataModel>> response) {
+                        emitter.onNext(response);
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<DataModel>> call, Throwable t) {
+                        emitter.onNext(null);
+                    }
+                });
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableObserver<Response<List<DataModel>>>() {
+            @Override
+            public void onNext(Response<List<DataModel>> response) {
                 loader.setVisibility(View.GONE);
+                syncCallFinish = false;
                 swipeRefreshLayout.setRefreshing(false);
-                if (page == 1) {
-                    dataList.clear();   // clear data list on refresh call
-                }
-                if (response != null && response.body() != null) {
-                    removeLoader();
+
+                if (response == null) {
+                    showEmptyView();
+                    return;
+                } else if (response.body() != null) {
+                    if (page == 1) {
+                        dataList.clear();   // clear data list on refresh call
+                    } else {
+                        removeLoader();
+                    }
                     dataList.addAll(response.body());
                     dataList.add(new LoaderData());
                     adapter.updateData(dataList);
@@ -134,8 +167,6 @@ public class PRListActivity extends BaseActivity {
                         completeItemLoaded = true;  //if all item have loaded
                         removeLoader();
                     }
-                } else {
-                    removeLoader();
                 }
                 if (dataList.size() == 0) {
                     emptyView.setVisibility(View.VISIBLE);
@@ -143,7 +174,13 @@ public class PRListActivity extends BaseActivity {
                 } else {
                     emptyView.setVisibility(View.GONE);
                 }
-                syncCallFinish = false;
+            }
+
+            private void showEmptyView() {
+                swipeRefreshLayout.setRefreshing(false);
+                recyclerView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.VISIBLE);
+                emptyView.setText(R.string.something_went_wrong);
             }
 
             private void removeLoader() {
@@ -152,13 +189,21 @@ public class PRListActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<List<DataModel>> call, Throwable t) {
-                swipeRefreshLayout.setRefreshing(false);
-                loader.setVisibility(View.GONE);
-                emptyView.setVisibility(View.VISIBLE);
-                emptyView.setText(R.string.something_went_wrong);
-                syncCallFinish = false;
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (disposable != null)
+            disposable.dispose();
+        super.onDestroy();
     }
 }
