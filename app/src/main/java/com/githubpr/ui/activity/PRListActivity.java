@@ -90,7 +90,7 @@ public class PRListActivity extends BaseActivity {
                 super.onScrolled(recyclerView, dx, dy);
                 int lastPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findLastVisibleItemPosition();
                 if (lastPosition == adapter.getItemCount() - 1 && !completeItemLoaded && !syncCallFinish) {
-                    loadPage(currentPage++);
+                    loadPage(++currentPage);
                 }
                 int firstCompletelyVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
                 if (firstCompletelyVisibleItemPosition == 0) {
