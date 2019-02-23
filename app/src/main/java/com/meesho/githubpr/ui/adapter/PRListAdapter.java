@@ -54,7 +54,6 @@ public class PRListAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         return dataList.size();
     }
 
-
     @Override
     public int getItemViewType(int position) {
         if (dataList.get(position) instanceof LoaderData)

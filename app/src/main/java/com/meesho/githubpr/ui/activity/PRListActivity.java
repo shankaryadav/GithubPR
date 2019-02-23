@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -24,18 +23,27 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class PRListActivity extends AppCompatActivity {
+public class PRListActivity extends BaseActivity {
 
     @BindView(R.id.recycle_view)
     RecyclerView recyclerView;
+
+    @BindView(R.id.swipe_refresh_layout)
     SwipeRefreshLayout swipeRefreshLayout;
 
+    @BindView(R.id.empty_view)
     TextView emptyView;
 
+    @BindView(R.id.loader)
     View loader;
+
+    @BindView(R.id.go_to_top)
+    View goToTop;
+
     private String githubOwnerName;
     private String githubRepoName;
     private CallHandler callHandler;
@@ -51,10 +59,6 @@ public class PRListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pr_list);
         setTitle(R.string.open_pull_request);
         ButterKnife.bind(this);
-        recyclerView = findViewById(R.id.recycle_view);
-        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-        emptyView = findViewById(R.id.empty_view);
-        loader = findViewById(R.id.loader);
         githubOwnerName = getIntent().getExtras().getString(Constants.GITHUB_OWNER_NAME);
         githubRepoName = getIntent().getExtras().getString(Constants.GITHUB_REPO_NAME);
         init();
@@ -80,6 +84,12 @@ public class PRListActivity extends AppCompatActivity {
                 if (lastPosition == adapter.getItemCount() - 1 && !completeItemLoaded && !syncCallFinish) {
                     loadPage(currentPage++);
                 }
+                int firstCompletelyVisibleItemPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+                if (firstCompletelyVisibleItemPosition == 0) {
+                    goToTop.setVisibility(View.GONE);
+                } else {
+                    goToTop.setVisibility(View.VISIBLE);
+                }
             }
         });
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -87,13 +97,22 @@ public class PRListActivity extends AppCompatActivity {
             public void onRefresh() {
                 currentPage = 1;
                 completeItemLoaded = false;
+                emptyView.setVisibility(View.GONE);
                 loadPage(currentPage);
             }
         });
     }
 
+    @OnClick(R.id.go_to_top)
+    public void onClick() {
+        if (dataList.size() > 40) {
+            recyclerView.scrollToPosition(20);
+        }
+        recyclerView.smoothScrollToPosition(0);
+    }
+
     private void loadPage(final int page) {
-        if (syncCallFinish)     // if call is already going for syncing then wait for it's response
+        if (syncCallFinish)     // if call is already going for syncing then wait for that response
             return;
 
         syncCallFinish = true;
