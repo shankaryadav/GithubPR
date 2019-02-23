@@ -11,16 +11,20 @@ import com.meesho.githubpr.picasso.ImageLoader;
 
 public class PRListViewHolder extends BaseViewHolder {
 
-    TextView number;
+    private TextView number;
 
-    TextView title;
+    private TextView title;
 
-    TextView user;
+    private TextView user;
 
-    ImageView thumbnail;
+    private ImageView thumbnail;
 
     public PRListViewHolder(@NonNull View itemView) {
         super(itemView);
+        number = itemView.findViewById(R.id.pr_number);
+        title = itemView.findViewById(R.id.pr_name);
+        user = itemView.findViewById(R.id.pr_user);
+        thumbnail = itemView.findViewById(R.id.thumbnail);
     }
 
     public void bindData(DataModel dataModel) {
