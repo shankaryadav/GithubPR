@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:context=".ui.activity.HomeActivity">
+
+    <EditText
+        android:id="@+id/github_owner_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/rectangle_rounded_border"
+        android:gravity="center_vertical"
+        android:hint="@string/github_owner"
+        android:paddingLeft="20dp" />
+
+    <EditText
+        android:id="@+id/github_repo_name"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/rectangle_rounded_border"
+        android:hint="@string/github_repo"
+        android:paddingLeft="20dp" />
+
+    <TextView
+        android:id="@+id/submit"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textSize="18sp"
+        android:elevation="2dp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/rectangle_rounded_border_with_background"
+        android:text="@string/submit" />
+
+</LinearLayout>

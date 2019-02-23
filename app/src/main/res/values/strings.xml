@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GithubPR</string>
+    <string name="github_owner">Github Owner</string>
+    <string name="github_repo">Github Repo</string>
+    <string name="submit">Submit</string>
+    <string name="github">Github</string>
+    <string name="open_pull_request">Open Pull Request</string>
+    <string name="no_open_pull_request_found">No Open Pull Request Found for %1$s / %2$s</string>
+    <string name="something_went_wrong">Something Went Wrong!</string>
+</resources>
